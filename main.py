@@ -116,6 +116,16 @@ class WebhookHandler(webapp2.RequestHandler):
             logging.info('send response:')
             logging.info(resp)
 
+        def sendStickerSelf(sticker_id=None):
+            resp = urllib2.urlopen(BASE_URL + 'sendSticker', urllib.urlencode({
+                    'chat_id': str(chat_id),
+                    'sticker': sticker_id,
+            })).read()
+
+        # Define constants here
+        STICKER_METAPOD = "BQADBAADoRIAAjZHEwABGO4_KV2DvAQC"
+        STICKER_SCYTHER = "BQADBAADrgQAAjZHEwABpXs1uQHdx-0C"
+
         if text.startswith('/'):
             if text == '/start':
                 reply('Bot enabled')
@@ -123,26 +133,30 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/stop':
                 reply('Bot disabled')
                 setEnabled(chat_id, False)
-            elif text == '/image':
-                img = Image.new('RGB', (512, 512))
-                base = random.randint(0, 16777216)
-                pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
-                img.putdata(pixels)
-                output = StringIO.StringIO()
-                img.save(output, 'JPEG')
-                reply(img=output.getvalue())
-            else:
-                reply('What command?')
+            # elif text == '/image':
+            #     img = Image.new('RGB', (512, 512))
+            #     base = random.randint(0, 16777216)
+            #     pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
+            #     img.putdata(pixels)
+            #     output = StringIO.StringIO()
+            #     img.save(output, 'JPEG')
+            #     reply(img=output.getvalue())
 
         # CUSTOMIZE FROM HERE
 
-        elif 'hello' in text:
-            reply('Hello there!')
-        elif 'hbd' in text:
-            reply(msg='Happy Birthday!', reply=False)
-        elif 'so bad' in text:
-            image_url = 'https://c7.staticflickr.com/9/8666/15776594150_240386133c_n.jpg'
-            reply(img=urllib2.urlopen(image_url).read())
+            elif '/fight' in text:
+                reply(msg='Bugcatcher Nic wants to battle!', reply=False)
+            elif '/sobad' in text:
+                image_url = 'https://c7.staticflickr.com/9/8666/15776594150_240386133c_n.jpg'
+                reply(img=urllib2.urlopen(image_url).read())
+            elif '/metapod' in text:
+                reply(msg='Bugcatcher Nic sends out Metapod!', reply=False)
+                sendStickerSelf(STICKER_METAPOD)
+            elif '/scyther' in text:
+                reply(msg='Bugcatcher Nic sends out Scyther!', reply=False)
+                sendStickerSelf(STICKER_SCYTHER)
+            elif '/help' in text:
+                reply('/start /stop to enable/disable bot. \n /fight /sobad /metapod /scyther')
 
         # else:
         #     if getEnabled(chat_id):
