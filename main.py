@@ -86,13 +86,18 @@ class WebhookHandler(webapp2.RequestHandler):
             logging.info('no text')
             return
 
-        def reply(msg=None, img=None):
+        def reply(msg=None, img=None, reply=True):
             if msg:
+                if (reply):
+                    reply_msg = str(message_id)
+                else:
+                    reply_msg = ""
+
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
                     'chat_id': str(chat_id),
                     'text': msg.encode('utf-8'),
                     'disable_web_page_preview': 'true',
-                    'reply_to_message_id': str(message_id),
+                    'reply_to_message_id': reply_msg,
                 })).read()
             elif img:
                 resp = multipart.post_multipart(BASE_URL + 'sendPhoto', [
@@ -127,6 +132,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply('What command?')
 
         # CUSTOMIZE FROM HERE
+
+        elif 'hello' in text:
+            reply('Hello there!')
+        elif 'hbd' in text:
+            reply(msg='Happy Birthday!', reply=False)
+        elif 'so bad' in text:
+            #req_image = Image.open("ZuoMoNiJiangBadDe.jpg")
+            #reply(img=req_image)
 
         elif 'who are you' in text:
             reply('telebot starter kit, created by yukuku: https://github.com/yukuku/telebot')
