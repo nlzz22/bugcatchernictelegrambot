@@ -1,3 +1,6 @@
+# This code is adapted <Telebot starter kit> , created by yukuku: https://github.com/yukuku/telebot'
+# Telegram Bot by Nicholas
+
 import StringIO
 import json
 import logging
@@ -138,18 +141,14 @@ class WebhookHandler(webapp2.RequestHandler):
         elif 'hbd' in text:
             reply(msg='Happy Birthday!', reply=False)
         elif 'so bad' in text:
-            #req_image = Image.open("ZuoMoNiJiangBadDe.jpg")
-            #reply(img=req_image)
+            image_url = 'https://c7.staticflickr.com/9/8666/15776594150_240386133c_n.jpg'
+            reply(img=urllib2.urlopen(image_url).read())
 
-        elif 'who are you' in text:
-            reply('telebot starter kit, created by yukuku: https://github.com/yukuku/telebot')
-        elif 'what time' in text:
-            reply('look at the corner of your screen!')
-        else:
-            if getEnabled(chat_id):
-                reply('I got your message! (but I do not know how to answer)')
-            else:
-                logging.info('not enabled for chat_id {}'.format(chat_id))
+        # else:
+        #     if getEnabled(chat_id):
+        #         reply('I got your message! (but I do not know how to answer)')
+        #     else:
+        #         logging.info('not enabled for chat_id {}'.format(chat_id))
 
 
 app = webapp2.WSGIApplication([
