@@ -7,6 +7,7 @@ import logging
 import random
 import urllib
 import urllib2
+import re
 
 # for sending images
 from PIL import Image
@@ -99,6 +100,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
                     'chat_id': str(chat_id),
                     'text': msg.encode('utf-8'),
+                    # 'text': msg,
                     'disable_web_page_preview': 'true',
                     'reply_to_message_id': reply_msg,
                 })).read()
@@ -122,9 +124,32 @@ class WebhookHandler(webapp2.RequestHandler):
                     'sticker': sticker_id,
             })).read()
 
+        def getRandomSongTitle():
+            list_songs = ['可愛女人', '星晴', '黑色幽默', '龍捲風', '愛在西元前', '爸我回來了',
+            '簡單愛', '開不了口', '雙截棍', '安靜', '暗號', '回到過去',
+            '最後的戰役', '以父之名', '晴天', '三年二班', '東風破', '妳聽得到', '她的睫毛',
+            '軌跡', '我的地盤', '七里香', '藉口', '外婆', '擱淺', '園遊會', '止戰之殤',
+            '一路向北', '飄移', '夜曲', '藍色風暴', '髮如雪', '黑色毛衣', '楓', '浪漫手機',
+            '麥芽糖', '珊瑚海', '霍元甲', '夜的第七章', '聽媽媽的話', '千里之外', '本草綱目',
+            '退後', '心雨', '白色風車', '迷迭香', '菊花台', '黃金甲', '不能說的秘密',
+            '牛仔很忙', '彩虹', '青花瓷', '陽光宅男', '蒲公英的約定', '我不配', '甜甜的',
+            '最長的電影', '給我一首歌的時間', '花海', '說好的幸福呢', '時光機', '稻香',
+            '說了再見', '雨下一整晚', '愛的飛行日記', '超人不會飛', '我落淚。情緒零碎',
+            'Mine Mine', '水手怕水', '手語', '公公偏頭痛', '明明就', '傻笑', '愛你沒差',
+            '大笨鐘', '哪裡都是你', '算什麼男人', '怎麼了', '我要夏天', '手寫的從前',
+            '鞋子特大號', '聽爸爸的話', '美人魚', '聽見下雨的聲音', '床邊故事',
+            '前世情人', '不該', 'Now You See Me']
+
+            chosen_index = random.randint(0, len(list_songs)-1)
+
+            return list_songs[chosen_index].decode('utf-8')
+
         # Define constants here
         STICKER_METAPOD = "BQADBAADoRIAAjZHEwABGO4_KV2DvAQC"
         STICKER_SCYTHER = "BQADBAADrgQAAjZHEwABpXs1uQHdx-0C"
+
+        if (not getEnabled(chat_id)):
+            return
 
         if text.startswith('/'):
             if text == '/start':
@@ -157,6 +182,25 @@ class WebhookHandler(webapp2.RequestHandler):
                 sendStickerSelf(STICKER_SCYTHER)
             elif '/help' in text:
                 reply('/start /stop to enable/disable bot. \n /fight /sobad /metapod /scyther')
+
+        elif 'youtube ' in text:
+            m = re.search('(?<=youtube ).*', text)
+            req_search = m.group(0)
+            link = '+'.join(req_search.split(' '))
+            full_link = "https://www.youtube.com/results?search_query=" + link
+            reply(full_link)
+        else:
+            reply_str = ""
+            if 'hello' in text:
+                reply_str += "Hello there. "
+            if 'you' in text and 'how' in text:
+                reply_str += "I am fine, thank you. " 
+
+            pattern = re.compile('(.*jay chou.*)')
+            if pattern.match(text):
+                reply_str += getRandomSongTitle()
+
+            reply(reply_str)
 
         # else:
         #     if getEnabled(chat_id):
