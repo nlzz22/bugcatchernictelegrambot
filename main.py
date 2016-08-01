@@ -148,9 +148,6 @@ class WebhookHandler(webapp2.RequestHandler):
         STICKER_METAPOD = "BQADBAADoRIAAjZHEwABGO4_KV2DvAQC"
         STICKER_SCYTHER = "BQADBAADrgQAAjZHEwABpXs1uQHdx-0C"
 
-        if (not getEnabled(chat_id)):
-            return
-
         if text.startswith('/'):
             if text == '/start':
                 reply('Bot enabled')
@@ -158,6 +155,8 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/stop':
                 reply('Bot disabled')
                 setEnabled(chat_id, False)
+            elif (not getEnabled(chat_id)):
+                return
             # elif text == '/image':
             #     img = Image.new('RGB', (512, 512))
             #     base = random.randint(0, 16777216)
@@ -182,7 +181,8 @@ class WebhookHandler(webapp2.RequestHandler):
                 sendStickerSelf(STICKER_SCYTHER)
             elif '/help' in text:
                 reply('/start /stop to enable/disable bot. \n /fight /sobad /metapod /scyther')
-
+        elif (not getEnabled(chat_id)):
+            return
         elif 'youtube ' in text:
             m = re.search('(?<=youtube ).*', text)
             req_search = m.group(0)
