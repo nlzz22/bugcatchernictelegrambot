@@ -81,7 +81,7 @@ class WebhookHandler(webapp2.RequestHandler):
             message = body['edited_message']
         message_id = message.get('message_id')
         date = message.get('date')
-        text = message.get('text')
+        text = message.get('text').lower()
         fr = message.get('from')
         chat = message['chat']
         chat_id = chat['id']
