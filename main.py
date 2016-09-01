@@ -8,6 +8,7 @@ import random
 import urllib
 import urllib2
 import re
+import secretBot
 
 # for sending images
 from PIL import Image
