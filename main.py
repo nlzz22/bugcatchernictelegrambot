@@ -143,6 +143,55 @@ class WebhookHandler(webapp2.RequestHandler):
             chosen_index = random.randint(0, len(list_songs)-1)
 
             return list_songs[chosen_index].decode('utf-8')
+            
+        def split_coord(coords):
+            parts = coords.split(",")
+            latitude = parts[0]
+            longitude = parts[1]
+            return latitude, longitude
+            
+        def analyze_raids(given_lat, given_long):
+            has_raid_found = False
+            
+            try:
+                given_lat = float(given_lat)
+                given_long = float(given_long)
+            except:
+                reply('invalid coordinates')
+                return
+        
+            list_predict = [("An Enclosure for a Swing", 1.359743, 103.848146), \
+                            ("Curved Park Canopy", 1.362179, 103.846025), \
+                            ("Istana Festival Arch", 1.299536, 103.843701), \
+                            ("Leaf Cover", 1.320631, 103.765059), \
+                            ("Family Bay at Lower Seletar Re", 1.410483, 103.833611), \
+                            ("Flying Lizard", 1.44007, 103.78958), \
+                            ("Goat the Zodiac", 1.390939,103.744427), \
+                            ("Horse Zodiac", 1.390136,103.744566), \
+                            ("Orange and Blue Bubblemen", 1.26428,103.82225), \
+                            ("My Waterway @ Punggol", 1.406488,103.9076), \
+                            ("Rock at Stagmont Park", 1.393602,103.748938), \
+                            ("Silver Garden", 1.284322,103.863999), \
+                            ("Yellow Worm Sculpture", 1.336967,103.718584) \
+            ]
+            
+            THRESHOLD = 0.00001
+            
+            for prediction in list_predict:
+                predict_lat = prediction[1]
+                predict_long = prediction[2]
+                if (abs(predict_lat - given_lat) <= THRESHOLD and abs(predict_long - given_long) <= THRESHOLD):
+                    reply(str(prediction[0]) + ' - ' + str(given_lat) + ' , ' + str(given_long) )
+                    has_raid_found = True
+                    break
+            if not has_raid_found:
+                reply('no suitable raids found.')
+
+            
+
+        def process_ex_raid(given_coords):
+            latitude, longitude = split_coord(given_coords)
+            analyze_raids(latitude, longitude)
 
         # Define constants here
         STICKER_METAPOD = "BQADBAADoRIAAjZHEwABGO4_KV2DvAQC"
@@ -181,6 +230,8 @@ class WebhookHandler(webapp2.RequestHandler):
             link = '+'.join(req_search.split(' '))
             full_link = "https://www.youtube.com/results?search_query=" + link
             reply(full_link)
+        elif ',' in text:
+            process_ex_raid(text)
         else:
             reply_str = ""
             if 'hello' in text:
