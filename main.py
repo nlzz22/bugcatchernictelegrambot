@@ -101,7 +101,6 @@ class WebhookHandler(webapp2.RequestHandler):
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
                     'chat_id': str(chat_id),
                     'text': msg.encode('utf-8'),
-                    # 'text': msg,
                     'disable_web_page_preview': 'true',
                     'reply_to_message_id': reply_msg,
                 })).read()
@@ -158,14 +157,6 @@ class WebhookHandler(webapp2.RequestHandler):
                 setEnabled(chat_id, False)
             elif (not getEnabled(chat_id)):
                 return
-            # elif text == '/image':
-            #     img = Image.new('RGB', (512, 512))
-            #     base = random.randint(0, 16777216)
-            #     pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
-            #     img.putdata(pixels)
-            #     output = StringIO.StringIO()
-            #     img.save(output, 'JPEG')
-            #     reply(img=output.getvalue())
 
         # CUSTOMIZE FROM HERE
 
@@ -202,12 +193,6 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply_str += getRandomSongTitle()
 
             reply(reply_str)
-
-        # else:
-        #     if getEnabled(chat_id):
-        #         reply('I got your message! (but I do not know how to answer)')
-        #     else:
-        #         logging.info('not enabled for chat_id {}'.format(chat_id))
 
 
 app = webapp2.WSGIApplication([
