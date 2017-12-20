@@ -198,7 +198,7 @@ class WebhookHandler(webapp2.RequestHandler):
             else:
                 reply(reply_string)  
         
-        def raid_gym(text):
+        def raid_gym(text, set_raid):
             try:
                 latitude, longitude = split_coord(text)
                 latitude = float(latitude)
@@ -210,9 +210,20 @@ class WebhookHandler(webapp2.RequestHandler):
                     curr_long = curr_raid_loc.longitude
                     
                     if is_coords_same(curr_lat, curr_long, latitude, longitude):
-                        curr_raid_loc.has_raided = True
-                        curr_raid_loc.put()
-                        reply("Registered the raid for " + get_gym_details(curr_raid_loc))
+                        if curr_raid_loc.has_raided == set_raid:
+                            if set_raid:
+                                reply('This location has already been raided before.')
+                            else:
+                                reply('This location has not been raided yet.')
+                        else:
+                            curr_raid_loc.has_raided = set_raid
+                            curr_raid_loc.put()
+                            prepend = ""
+                            if set_raid:
+                                prepend = "R"
+                            else:
+                                prepend = "Unr"
+                            reply(prepend + "egistered the raid for " + get_gym_details(curr_raid_loc))
                         return
                         
                 reply('the specified gym does not exist in database.')
@@ -254,12 +265,15 @@ class WebhookHandler(webapp2.RequestHandler):
             elif '/all' in text:
                 show_all_raids()
             elif '/raid' in text:
-                raid_gym(text[6:])
+                raid_gym(text[6:], True)
+            elif '/unraid' in text:
+                raid_gym(text[8:], False)
             elif '/help' in text:
                 help_msg = "/start /stop to enable/disable bot." + \
                     "\n\n Type coordinates to see if it is in list of predicted raids. \nExample: 1.2345, 103.1234" + \
                     "\n\n To add a gym with coords to the database, type this:\n/add Gym Name, 1.12345, 1.67890 " + \
                     "\n\n To specify a gym which you have raided, type this:\n/raid 1.12345, 1.67890 " + \
+                    "\n\n To remove the raid status of the gym, type this:\n/unraid 1.12345, 1.67890 " + \
                     "\n\n To see list of all predicted raids in the database,\ntype: /all "
                 reply(help_msg)
                 
