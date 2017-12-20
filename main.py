@@ -228,7 +228,13 @@ class WebhookHandler(webapp2.RequestHandler):
                         
                 reply('the specified gym does not exist in database.')
             except:
-                reply('Wrong format. Example: " /raid 1.12345, 1.67890 "')
+                mid_str = ""
+                if set_raid:
+                    mid_str = "/raid"
+                else:
+                    mid_str = "/unraid"
+                    
+                reply('Wrong format. Example: " ' + mid_str + ' 1.12345, 1.67890 "')
 
         def process_ex_raid(given_coords):
             latitude, longitude = split_coord(given_coords)
@@ -261,13 +267,22 @@ class WebhookHandler(webapp2.RequestHandler):
                 #reply(msg='Bugcatcher Nic sends out Scyther!', reply=False)
                 #sendStickerSelf(STICKER_SCYTHER)
             elif '/add' in text:
-                add_ex_raid(text[5:])
-            elif '/all' in text:
+                if len(text) >= 5 and text[0:4] == "/add":
+                    add_ex_raid(text[5:])
+                else:
+                    add_ex_raid("/add error")
+            elif text == '/all':
                 show_all_raids()
             elif '/raid' in text:
-                raid_gym(text[6:], True)
+                if len(text) >= 6 and text[0:5] == "/raid":
+                    raid_gym(text[6:], True)
+                else:
+                    raid_gym("/raid error", True)
             elif '/unraid' in text:
-                raid_gym(text[8:], False)
+                if len(text) >= 8 and text[0:7] == "/unraid":
+                    raid_gym(text[8:], False)
+                else:
+                    raid_gym("/unraid error", False)
             elif '/help' in text:
                 help_msg = "/start /stop to enable/disable bot." + \
                     "\n\n Type coordinates to see if it is in list of predicted raids. \nExample: 1.2345, 103.1234" + \
