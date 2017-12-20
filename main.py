@@ -47,6 +47,15 @@ def getEnabled(chat_id):
 
 # ================================
 
+class RaidLocation(ndb.Model):
+    gym_name = ndb.StringProperty()
+    latitude = ndb.FloatProperty()
+    longitude = ndb.FloatProperty()
+    has_raided = ndb.BooleanProperty()
+
+
+# ================================
+
 class MeHandler(webapp2.RequestHandler):
     def get(self):
         urlfetch.set_default_fetch_deadline(60)
@@ -123,32 +132,20 @@ class WebhookHandler(webapp2.RequestHandler):
                     'chat_id': str(chat_id),
                     'sticker': sticker_id,
             })).read()
-
-        def getRandomSongTitle():
-            list_songs = ['可愛女人', '星晴', '黑色幽默', '龍捲風', '愛在西元前', '爸我回來了',
-            '簡單愛', '開不了口', '雙截棍', '安靜', '暗號', '回到過去',
-            '最後的戰役', '以父之名', '晴天', '三年二班', '東風破', '妳聽得到', '她的睫毛',
-            '軌跡', '我的地盤', '七里香', '藉口', '外婆', '擱淺', '園遊會', '止戰之殤',
-            '一路向北', '飄移', '夜曲', '藍色風暴', '髮如雪', '黑色毛衣', '楓', '浪漫手機',
-            '麥芽糖', '珊瑚海', '霍元甲', '夜的第七章', '聽媽媽的話', '千里之外', '本草綱目',
-            '退後', '心雨', '白色風車', '迷迭香', '菊花台', '黃金甲', '不能說的秘密',
-            '牛仔很忙', '彩虹', '青花瓷', '陽光宅男', '蒲公英的約定', '我不配', '甜甜的',
-            '最長的電影', '給我一首歌的時間', '花海', '說好的幸福呢', '時光機', '稻香',
-            '說了再見', '雨下一整晚', '愛的飛行日記', '超人不會飛', '我落淚。情緒零碎',
-            'Mine Mine', '水手怕水', '手語', '公公偏頭痛', '明明就', '傻笑', '愛你沒差',
-            '大笨鐘', '哪裡都是你', '算什麼男人', '怎麼了', '我要夏天', '手寫的從前',
-            '鞋子特大號', '聽爸爸的話', '美人魚', '聽見下雨的聲音', '床邊故事',
-            '前世情人', '不該', 'Now You See Me']
-
-            chosen_index = random.randint(0, len(list_songs)-1)
-
-            return list_songs[chosen_index].decode('utf-8')
             
         def split_coord(coords):
             parts = coords.split(",")
             latitude = parts[0]
             longitude = parts[1]
             return latitude, longitude
+            
+        def is_coords_same(lat, long, latB, longB):
+            THRESHOLD = 0.00001
+            
+            if (abs(lat - latB) <= THRESHOLD and abs(long - longB) <= THRESHOLD):
+                return True
+            else:
+                return False
             
         def analyze_raids(given_lat, given_long):
             has_raid_found = False
@@ -159,35 +156,67 @@ class WebhookHandler(webapp2.RequestHandler):
             except:
                 reply('invalid coordinates')
                 return
-        
-            list_predict = [("An Enclosure for a Swing", 1.359743, 103.848146), \
-                            ("Curved Park Canopy", 1.362179, 103.846025), \
-                            ("Istana Festival Arch", 1.299536, 103.843701), \
-                            ("Leaf Cover", 1.320631, 103.765059), \
-                            ("Family Bay at Lower Seletar Re", 1.410483, 103.833611), \
-                            ("Flying Lizard", 1.44007, 103.78958), \
-                            ("Goat the Zodiac", 1.390939,103.744427), \
-                            ("Horse Zodiac", 1.390136,103.744566), \
-                            ("Orange and Blue Bubblemen", 1.26428,103.82225), \
-                            ("My Waterway @ Punggol", 1.406488,103.9076), \
-                            ("Rock at Stagmont Park", 1.393602,103.748938), \
-                            ("Silver Garden", 1.284322,103.863999), \
-                            ("Yellow Worm Sculpture", 1.336967,103.718584) \
-            ]
-            
-            THRESHOLD = 0.00001
-            
-            for prediction in list_predict:
-                predict_lat = prediction[1]
-                predict_long = prediction[2]
-                if (abs(predict_lat - given_lat) <= THRESHOLD and abs(predict_long - given_long) <= THRESHOLD):
-                    reply(str(prediction[0]) + ' - ' + str(given_lat) + ' , ' + str(given_long) )
+
+            queryResult = RaidLocation.query()
+            for curr_raid_loc in queryResult:
+                predict_lat = curr_raid_loc.latitude
+                predict_long = curr_raid_loc.longitude
+                gym_name = curr_raid_loc.gym_name
+                
+                if is_coords_same(predict_lat, predict_long, given_lat, given_long):
+                    reply(gym_name + ' - ' + str(given_lat) + ' , ' + str(given_long) )
                     has_raid_found = True
                     break
             if not has_raid_found:
                 reply('no suitable raids found.')
 
-            
+        def add_ex_raid(text):
+            try:
+                parts = text.split(",")
+                name = parts[0]
+                lat = float(parts[1].replace(" ", ""))
+                long = float(parts[2].replace(" ", ""))
+                new_raid = RaidLocation(gym_name=name, latitude=lat, longitude=long, has_raided=False)
+                new_raid.put()
+                reply('The gym - ' + str(name) + ' is successfully added @ ' + str(lat) + " , " + str(long) + ".")
+            except:
+                reply('Wrong format. Example: " /add Gym Name, 1.12345, 1.67890 "')
+                
+        def show_all_raids():
+            queryResult = RaidLocation.query()
+            reply_string = ""
+            for curr_raid_loc in queryResult:
+                if curr_raid_loc.has_raided:
+                    reply_string += "[Raided] "
+                reply_string += curr_raid_loc.gym_name + " - " + str(curr_raid_loc.latitude) + " , " + \
+                    str(curr_raid_loc.longitude) + "\n"
+                    
+            if queryResult.count() == 0:
+                reply('no raids are added yet.')
+            else:
+                reply(reply_string)  
+        
+        def raid_gym(text):
+            try:
+                latitude, longitude = split_coord(text)
+                latitude = float(latitude)
+                longitude = float(longitude)
+                
+                queryResult = RaidLocation.query()
+                for curr_raid_loc in queryResult:
+                    curr_lat = curr_raid_loc.latitude
+                    curr_long = curr_raid_loc.longitude
+                    
+                    if is_coords_same(curr_lat, curr_long, latitude, longitude):
+                        curr_raid_loc.has_raided = True
+                        curr_raid_loc.put()
+                        reply("Registered the raid for " + curr_raid_loc.gym_name + " - " + str(curr_raid_loc.latitude) + " , " + \
+                            str(curr_raid_loc.longitude))
+                        return
+                        
+                reply('the specified gym does not exist in database.')
+            except:
+                reply('Wrong format. Example: " /raid 1.12345, 1.67890 "')
 
         def process_ex_raid(given_coords):
             latitude, longitude = split_coord(given_coords)
@@ -208,20 +237,31 @@ class WebhookHandler(webapp2.RequestHandler):
                 return
 
         # CUSTOMIZE FROM HERE
-
-            elif '/fight' in text:
-                reply(msg='Bugcatcher Nic wants to battle!', reply=False)
-            elif '/sobad' in text:
-                image_url = 'https://c7.staticflickr.com/9/8666/15776594150_240386133c_n.jpg'
-                reply(img=urllib2.urlopen(image_url).read())
-            elif '/metapod' in text:
-                reply(msg='Bugcatcher Nic sends out Metapod!', reply=False)
-                sendStickerSelf(STICKER_METAPOD)
-            elif '/scyther' in text:
-                reply(msg='Bugcatcher Nic sends out Scyther!', reply=False)
-                sendStickerSelf(STICKER_SCYTHER)
+            #elif '/fight' in text:
+                #reply(msg='Bugcatcher Nic wants to battle!', reply=False)
+            #elif '/sobad' in text:
+                #image_url = 'https://c7.staticflickr.com/9/8666/15776594150_240386133c_n.jpg'
+                #reply(img=urllib2.urlopen(image_url).read())
+            #elif '/metapod' in text:
+                #reply(msg='Bugcatcher Nic sends out Metapod!', reply=False)
+                #sendStickerSelf(STICKER_METAPOD)
+            #elif '/scyther' in text:
+                #reply(msg='Bugcatcher Nic sends out Scyther!', reply=False)
+                #sendStickerSelf(STICKER_SCYTHER)
+            elif '/add' in text:
+                add_ex_raid(text[5:])
+            elif '/all' in text:
+                show_all_raids()
+            elif '/raid' in text:
+                raid_gym(text[6:])
             elif '/help' in text:
-                reply('/start /stop to enable/disable bot. \n /fight /sobad /metapod /scyther')
+                help_msg = "/start /stop to enable/disable bot." + \
+                    "\n\n Type coordinates to see if it is in list of predicted raids. \nExample: 1.2345, 103.1234" + \
+                    "\n\n To add a gym with coords to the database, type this:\n/add Gym Name, 1.12345, 1.67890 " + \
+                    "\n\n To specify a gym which you have raided, type this:\n/raid 1.12345, 1.67890 " + \
+                    "\n\n To see list of all predicted raids in the database,\ntype: /all "
+                reply(help_msg)
+                
         elif (not getEnabled(chat_id)):
             return
         elif 'youtube ' in text:
@@ -238,10 +278,6 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply_str += "Hello there. "
             if 'you' in text and 'how' in text:
                 reply_str += "I am fine, thank you. " 
-
-            pattern = re.compile('(.*jay chou.*)')
-            if pattern.match(text):
-                reply_str += getRandomSongTitle()
 
             reply(reply_str)
 
