@@ -188,7 +188,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply('Wrong format. Example: " /add Gym Name, 1.12345, 1.67890 "')
                 
         def show_all_raids():
-            queryResult = RaidLocation.query()
+            queryResult = RaidLocation.query().order(RaidLocation.has_raided)
             reply_string = ""
             for curr_raid_loc in queryResult:
                 reply_string += get_gym_details(curr_raid_loc) + "\n"
