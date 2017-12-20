@@ -147,9 +147,6 @@ class WebhookHandler(webapp2.RequestHandler):
             else:
                 return False
 
-        def get_same_coords_condition():
-            pass
-
         def get_gym_details(given_gym):
             header_str = ""
             if given_gym.has_raided:
