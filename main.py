@@ -146,6 +146,15 @@ class WebhookHandler(webapp2.RequestHandler):
                 return True
             else:
                 return False
+
+        def get_same_coords_condition():
+            pass
+
+        def get_gym_details(given_gym):
+            header_str = ""
+            if given_gym.has_raided:
+                header_str = "[Raided] "
+            return header_str + given_gym.gym_name + " - " + str(given_gym.latitude) + " , " + str(given_gym.longitude)            
             
         def analyze_raids(given_lat, given_long):
             has_raid_found = False
@@ -161,10 +170,9 @@ class WebhookHandler(webapp2.RequestHandler):
             for curr_raid_loc in queryResult:
                 predict_lat = curr_raid_loc.latitude
                 predict_long = curr_raid_loc.longitude
-                gym_name = curr_raid_loc.gym_name
                 
                 if is_coords_same(predict_lat, predict_long, given_lat, given_long):
-                    reply(gym_name + ' - ' + str(given_lat) + ' , ' + str(given_long) )
+                    reply(get_gym_details(curr_raid_loc))
                     has_raid_found = True
                     break
             if not has_raid_found:
@@ -186,10 +194,7 @@ class WebhookHandler(webapp2.RequestHandler):
             queryResult = RaidLocation.query()
             reply_string = ""
             for curr_raid_loc in queryResult:
-                if curr_raid_loc.has_raided:
-                    reply_string += "[Raided] "
-                reply_string += curr_raid_loc.gym_name + " - " + str(curr_raid_loc.latitude) + " , " + \
-                    str(curr_raid_loc.longitude) + "\n"
+                reply_string += get_gym_details(curr_raid_loc) + "\n"
                     
             if queryResult.count() == 0:
                 reply('no raids are added yet.')
@@ -210,8 +215,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     if is_coords_same(curr_lat, curr_long, latitude, longitude):
                         curr_raid_loc.has_raided = True
                         curr_raid_loc.put()
-                        reply("Registered the raid for " + curr_raid_loc.gym_name + " - " + str(curr_raid_loc.latitude) + " , " + \
-                            str(curr_raid_loc.longitude))
+                        reply("Registered the raid for " + get_gym_details(curr_raid_loc))
                         return
                         
                 reply('the specified gym does not exist in database.')
