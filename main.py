@@ -9,6 +9,7 @@ import urllib
 import urllib2
 import re
 import secretBot
+import time
 
 # for sending images
 from PIL import Image
@@ -52,6 +53,10 @@ class RaidLocation(ndb.Model):
     latitude = ndb.FloatProperty()
     longitude = ndb.FloatProperty()
     has_raided = ndb.BooleanProperty()
+
+class GymTime(ndb.Model):
+    time = ndb.StringProperty()
+    user = ndb.StringProperty()
 
 
 # ================================
@@ -196,7 +201,68 @@ class WebhookHandler(webapp2.RequestHandler):
             if queryResult.count() == 0:
                 reply('no raids are added yet.')
             else:
-                reply(reply_string)  
+                reply(reply_string)
+
+        def format_time(int_time):
+            joined_time = "0" + str(int_time)
+            return joined_time[-2:] # get last 2 characters
+
+        def minus_seconds(hour, minute, second, minus_amt):
+            second -= minus_amt
+            if second < 0:
+                second += 60
+                minute -= 1
+                if minute < 0:
+                    minute += 60
+                    hour -= 1
+                    if hour == 0:
+                        hour = 12
+
+            return format_time(hour) + ":" + format_time(minute) + ":" + format_time(second)
+            
+
+        def format_gym_time(time):
+            hour = int(time[0:2])
+            minute = int(time[2:4])
+            second = int(time[4:6])
+            
+            # Add 10 mins
+            minute += 10
+            if minute > 59:
+                minute -= 60
+                hour += 1
+                if hour == 13:
+                    hour = 1
+
+            # minus X seconds
+            time_minus_two = minus_seconds(hour, minute, second, 2)
+            time_minus_three = minus_seconds(hour, minute, second, 3)
+
+            return "[Time if -2] " + str(time_minus_two) + "  ||   " + "[Time if -3] " + str(time_minus_three)
+
+        def register_gym(text):
+            try:
+                if len(text) == 5:
+                    text = "0" + text
+                elif len(text) != 6:
+                    raise Exception("wrong format")
+
+                curr_time = text
+                int(curr_time) # test if it is in numbers
+                
+                curr_user = str(chat_id)
+                new_gymtime = GymTime(time=curr_time, user=curr_user)
+                new_gymtime.put()
+
+                time.sleep(1) # delay for time to update db before querying
+
+                queryResult = GymTime.query(GymTime.user == str(chat_id))
+                reply_string = "Gym timings: \n"
+                for gymtime in queryResult:
+                    reply_string += format_gym_time(gymtime.time) + "\n"
+                reply(reply_string)                    
+            except:
+                reply('Wrong format. Example: " /gym 121034 " ')
         
         def raid_gym(text, set_raid):
             try:
@@ -283,6 +349,11 @@ class WebhookHandler(webapp2.RequestHandler):
                     raid_gym(text[8:], False)
                 else:
                     raid_gym("/unraid error", False)
+            elif '/gym' in text:
+                if len(text) >= 5  and text[0:4] == "/gym":
+                    register_gym(text[5:])
+                else:
+                    register_gym("/gym error")
             elif '/help' in text:
                 help_msg = "/start /stop to enable/disable bot." + \
                     "\n\n Type coordinates to see if it is in list of predicted raids. \nExample: 1.2345, 103.1234" + \
