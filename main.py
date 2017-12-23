@@ -263,6 +263,12 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply(reply_string)                    
             except:
                 reply('Wrong format. Example: " /gym 121034 " ')
+
+        def clear_gym():
+            queryResult = GymTime.query(GymTime.user == str(chat_id))
+            for item in queryResult:
+                item.key.delete()
+            reply('All gym timings are cleared.')
         
         def raid_gym(text, set_raid):
             try:
@@ -349,6 +355,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     raid_gym(text[8:], False)
                 else:
                     raid_gym("/unraid error", False)
+            elif text == "/gymdone":
+                clear_gym()
             elif '/gym' in text:
                 if len(text) >= 5  and text[0:4] == "/gym":
                     register_gym(text[5:])
@@ -360,7 +368,9 @@ class WebhookHandler(webapp2.RequestHandler):
                     "\n\n To add a gym with coords to the database, type this:\n/add Gym Name, 1.12345, 1.67890 " + \
                     "\n\n To specify a gym which you have raided, type this:\n/raid 1.12345, 1.67890 " + \
                     "\n\n To remove the raid status of the gym, type this:\n/unraid 1.12345, 1.67890 " + \
-                    "\n\n To see list of all predicted raids in the database,\ntype: /all "
+                    "\n\n To see list of all predicted raids in the database,\ntype: /all " + \
+                    "\n\n To add the time after shaving first pokemon from gym, \ntype: /gym 121034 " + \
+                    "\n\n To remove all gym timings for slotting purposes,\ntype: /gymdone "
                 reply(help_msg)
                 
         elif (not getEnabled(chat_id)):
