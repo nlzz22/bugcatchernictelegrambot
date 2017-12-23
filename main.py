@@ -203,6 +203,12 @@ class WebhookHandler(webapp2.RequestHandler):
             else:
                 reply(reply_string)
 
+        def delete_all_raids():
+            queryResult = RaidLocation.query()
+            for item in queryResult:
+                item.key.delete()
+            reply('You have deleted all raids.')
+
         def format_time(int_time):
             joined_time = "0" + str(int_time)
             return joined_time[-2:] # get last 2 characters
@@ -345,6 +351,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     add_ex_raid("/add error")
             elif text == '/all':
                 show_all_raids()
+            elif text == '/deleteall':
+                delete_all_raids()
             elif '/raid' in text:
                 if len(text) >= 6 and text[0:5] == "/raid":
                     raid_gym(text[6:], True)
@@ -370,7 +378,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     "\n\n To remove the raid status of the gym, type this:\n/unraid 1.12345, 1.67890 " + \
                     "\n\n To see list of all predicted raids in the database,\ntype: /all " + \
                     "\n\n To add the time after shaving first pokemon from gym, \ntype: /gym 121034 " + \
-                    "\n\n To remove all gym timings for slotting purposes,\ntype: /gymdone "
+                    "\n\n To remove all gym timings for slotting purposes,\ntype: /gymdone " + \
+                    "\n\n To remove all raids, \ntype: /deleteall "
                 reply(help_msg)
                 
         elif (not getEnabled(chat_id)):
