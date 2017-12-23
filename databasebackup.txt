@@ -1,0 +1,93 @@
+
+ 
+Name/ID	gym_name	has_raided	latitude	longitude	
+ 
+id=5071522616049664	
+orange and blue bubblemen	
+true	
+1.26428	
+103.82225	
+ 
+id=5086441721823232	
+leaf cover	
+false	
+1.320631	
+103.765059	
+ 
+id=5144752345317376	
+curiosity+u	
+false	
+1.31077	
+103.77809	
+ 
+id=5634472569470976	
+flying lizard	
+true	
+1.44007	
+103.78958	
+ 
+id=5639445604728832	
+an enclosure for a swing	
+false	
+1.359743	
+103.848146	
+ 
+id=5654313976201216	
+silver garden	
+true	
+1.284322	
+103.863999	
+ 
+id=5659313586569216	
+family bay at lower seletar re	
+true	
+1.410483	
+103.833611	
+ 
+id=5668600916475904	
+horse zodiac	
+false	
+1.390136	
+103.744566	
+ 
+id=5672749318012928	
+snippets of toa payoh	
+true	
+1.335191	
+103.852794	
+ 
+id=5700305828184064	
+rock at stagmont park	
+false	
+1.393602	
+103.748938	
+ 
+id=5707702298738688	
+istana festival arch	
+false	
+1.299536	
+103.843701	
+ 
+id=5715999101812736	
+goat the zodiac	
+false	
+1.390939	
+103.744427	
+ 
+id=5720147234914304	
+yellow worm sculpture	
+false	
+1.336967	
+103.718584	
+ 
+id=5722646637445120	
+curved park canopy	
+true	
+1.362179	
+103.846025	
+ 
+id=5741031244955648	
+my waterway @ punggol	
+true	
+1.406488	
+103.9076	

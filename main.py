@@ -191,6 +191,26 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply('The gym - ' + str(name) + ' is successfully added @ ' + str(lat) + " , " + str(long) + ".")
             except:
                 reply('Wrong format. Example: " /add Gym Name, 1.12345, 1.67890 "')
+
+        def del_ex_raid(text):
+            try:
+                latitude, longitude = split_coord(text)
+                given_lat = float(latitude)
+                given_long = float(longitude)
+
+                queryResult = RaidLocation.query()
+                for curr_raid_loc in queryResult:
+                    predict_lat = curr_raid_loc.latitude
+                    predict_long = curr_raid_loc.longitude
+                    
+                    if is_coords_same(predict_lat, predict_long, given_lat, given_long):
+                        reply ('Removed: ' + get_gym_details(curr_raid_loc))
+                        curr_raid_loc.key.delete()
+                        return
+
+                reply('Invalid coordinates')
+            except:
+                reply('Wrong format. Example: " /delete 1.12345, 1.67890 "')
                 
         def show_all_raids():
             queryResult = RaidLocation.query().order(RaidLocation.has_raided)
@@ -353,6 +373,11 @@ class WebhookHandler(webapp2.RequestHandler):
                 show_all_raids()
             elif text == '/deleteall':
                 delete_all_raids()
+            elif '/delete' in text:
+                if len(text) >= 8 and text[0:7] == "/delete":
+                    del_ex_raid(text[8:])
+                else:
+                    del_ex_raid("/delete error")
             elif '/raid' in text:
                 if len(text) >= 6 and text[0:5] == "/raid":
                     raid_gym(text[6:], True)
@@ -374,6 +399,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 help_msg = "/start /stop to enable/disable bot." + \
                     "\n\n Type coordinates to see if it is in list of predicted raids. \nExample: 1.2345, 103.1234" + \
                     "\n\n To add a gym with coords to the database, type this:\n/add Gym Name, 1.12345, 1.67890 " + \
+                    "\n\n To remove a gym with coords from database, type this:\n/delete 1.12345, 1.67890 " + \
                     "\n\n To specify a gym which you have raided, type this:\n/raid 1.12345, 1.67890 " + \
                     "\n\n To remove the raid status of the gym, type this:\n/unraid 1.12345, 1.67890 " + \
                     "\n\n To see list of all predicted raids in the database,\ntype: /all " + \
