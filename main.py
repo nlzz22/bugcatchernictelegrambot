@@ -346,6 +346,9 @@ class WebhookHandler(webapp2.RequestHandler):
         # Define constants here
         STICKER_METAPOD = "BQADBAADoRIAAjZHEwABGO4_KV2DvAQC"
         STICKER_SCYTHER = "BQADBAADrgQAAjZHEwABpXs1uQHdx-0C"
+        
+        # remove instances of self-call
+        text = text.replace("@bugcatcherbot", "")
 
         if text.startswith('/'):
             if text == '/start':
