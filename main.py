@@ -337,6 +337,11 @@ class WebhookHandler(webapp2.RequestHandler):
         def process_ex_raid(given_coords):
             latitude, longitude = split_coord(given_coords)
             analyze_raids(latitude, longitude)
+            
+        def random_choice(choices):
+            parts = choices.split(",")
+            reply("The bot has picked " + str(random.choice(parts)) + " ! ")
+                
 
         # Define constants here
         STICKER_METAPOD = "BQADBAADoRIAAjZHEwABGO4_KV2DvAQC"
@@ -395,6 +400,11 @@ class WebhookHandler(webapp2.RequestHandler):
                     register_gym(text[5:])
                 else:
                     register_gym("/gym error")
+            elif '/random' in text:
+                if len(text) >= 8 and text[0:7] == "/random":
+                    random_choice(text[8:])
+                else:
+                    reply("please type /random choice1, choice2, choice3 for example.")
             elif '/help' in text:
                 help_msg = "/start /stop to enable/disable bot." + \
                     "\n\n Type coordinates to see if it is in list of predicted raids. \nExample: 1.2345, 103.1234" + \
@@ -405,7 +415,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     "\n\n To see list of all predicted raids in the database,\ntype: /all " + \
                     "\n\n To add the time after shaving first pokemon from gym, \ntype: /gym 121034 " + \
                     "\n\n To remove all gym timings for slotting purposes,\ntype: /gymdone " + \
-                    "\n\n To remove all raids, \ntype: /deleteall "
+                    "\n\n To remove all raids, \ntype: /deleteall " + \
+                    "\n\n To let the bot pick something at random,\ntype: /random choice1, choice2, choice3 "
                 reply(help_msg)
                 
         elif (not getEnabled(chat_id)):
